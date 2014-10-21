@@ -1,0 +1,23 @@
+CREATE TABLE [dbo].[tbl_CLAIMDAT_Detail](
+	[CLAIMDATDetailId] [int] IDENTITY(1,1) NOT NULL,
+	[ContractNumber] [varchar](5) NULL,
+	[RecordType] [varchar](1) NULL,
+	[CAN-BIC] [varchar](12) NULL,
+	[PeriodFrom] [varchar](8) NULL,
+	[PeriodTo] [varchar](8) NULL,
+	[DateofBirth] [varchar](8) NULL,
+	[Surname] [varchar](6) NULL,
+	[FirstName] [varchar](1) NULL,
+	[MiddleInitial] [varchar](1) NULL,
+	[ReimbursementAmount] [varchar](11) NULL,
+	[TotalAllowedCharges] [varchar](11) NULL,
+	[ReportDate] [varchar](6) NULL,
+	[Contractoridentificationnumber] [varchar](5) NULL,
+	[Provideridentificationnumber] [varchar](10) NULL,
+	[InternalControlNumber] [varchar](15) NULL,
+	[ProviderPaymentAmount] [varchar](11) NULL,
+	[BeneficiaryPaymentAmount] [varchar](11) NULL,
+	[Filler01] [varchar](57) NULL,
+	[DataImported] [datetime] NOT NULL,
+	[FileName] [varchar](128) NOT NULL
+) ON [PRIMARY]
