@@ -1,0 +1,56 @@
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+
+Create procedure [dbo].[ImportCLAIMDAT] @path As varChar(128), @filename As varChar(128), @emailRecipient As varchar(128)
+As
+
+Begin
+
+/* One Time only: Create holding table tbl_CLAIMDAT_In
+Drop Table [dbo].[tbl_CLAIMDAT_In]
+Create Table [dbo].[tbl_CLAIMDAT_In] (col001 varchar(max))
+*/
+
+Truncate Table [dbo].[tbl_CLAIMDAT_In]
+
+Declare @BulkCmd As nvarChar(4000)
+Set		@BulkCmd = "BULK INSERT tbl_CLAIMDAT_In FROM '"+@path+@filename+"' WITH (FIELDTERMINATOR = '\n')"
+
+Exec	(@BulkCmd)
+
+Declare @today As DateTime
+Set @today=getDate()
+
+Insert	Into [dbo].[tbl_CLAIMDAT_Detail]
+Select	Cast(SUBSTRING(CI.Col001,1,5) As VarChar(5)) As [ContractNumber],
+		Cast(SUBSTRING(CI.Col001,6,1) As VarChar(1)) As [RecordType],
+		Cast(SUBSTRING(CI.Col001,7,12) As VarChar(12)) As [CAN-BIC],
+		Cast(SUBSTRING(CI.Col001,19,8) As VarChar(8)) As [PeriodFrom],
+		Cast(SUBSTRING(CI.Col001,27,8) As VarChar(8)) As [PeriodTo],
+		Cast(SUBSTRING(CI.Col001,35,8) As VarChar(8)) As [DateofBirth],
+		Cast(SUBSTRING(CI.Col001,43,6) As VarChar(6)) As [Surname],
+		Cast(SUBSTRING(CI.Col001,49,1) As VarChar(1)) As [FirstName],
+		Cast(SUBSTRING(CI.Col001,50,1) As VarChar(1)) As [MiddleInitial],
+		Cast(SUBSTRING(CI.Col001,51,11) As VarChar(11)) As [ReimbursementAmount],
+		Cast(SUBSTRING(CI.Col001,62,11) As VarChar(11)) As [TotalAllowedCharges],
+		Cast(SUBSTRING(CI.Col001,73,6) As VarChar(6)) As [ReportDate],
+		Cast(SUBSTRING(CI.Col001,79,5) As VarChar(5)) As [Contractoridentificationnumber],
+		Cast(SUBSTRING(CI.Col001,84,10) As VarChar(10)) As [Provideridentificationnumber],
+		Cast(SUBSTRING(CI.Col001,94,15) As VarChar(15)) As [InternalControlNumber],
+		Cast(SUBSTRING(CI.Col001,109,11) As VarChar(11)) As [ProviderPaymentAmount],
+		Cast(SUBSTRING(CI.Col001,120,11) As VarChar(11)) As [BeneficiaryPaymentAmount],
+		Cast(SUBSTRING(CI.Col001,131,57) As VarChar(57)) As [Filler01],
+		@today As DateImported,
+		@filename As [FileName]
+From	[dbo].[tbl_CLAIMDAT_In] As CI
+Left	Outer Join [dbo].[tbl_CLAIMDAT_Detail] As CD
+		On CD.[ContractNumber]=SUBSTRING(CI.Col001,1,5)
+		And CD.[RecordType]=SUBSTRING(CI.Col001,6,1) 
+		And CD.[CAN-BIC]=SUBSTRING(CI.Col001,7,12) 
+		And CD.[FileName]=@filename
+Where	SUBSTRING(CI.Col001,43,48) <> ' '
+        And CD.[CAN-BIC] Is Null
+
+End
